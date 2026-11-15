@@ -19,7 +19,9 @@ interface CursorComposer {
 }
 
 function cursorUserRoot(): string {
-  if (process.env.CURSOR_USER_DATA?.trim()) return join(process.env.CURSOR_USER_DATA.trim(), "User");
+  // CURSOR_USER_DATA is documented as the User directory itself: it contains
+  // globalStorage and workspaceStorage. Do not append another "User" segment.
+  if (process.env.CURSOR_USER_DATA?.trim()) return process.env.CURSOR_USER_DATA.trim();
   const home = homedir();
   if (process.platform === "win32") return join(process.env.APPDATA ?? join(home, "AppData", "Roaming"), "Cursor", "User");
   if (process.platform === "darwin") return join(home, "Library", "Application Support", "Cursor", "User");
