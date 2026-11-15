@@ -1,4 +1,4 @@
-export type SourceName = "codex" | "claude";
+export type SourceName = "codex" | "claude" | "cursor";
 export type ActivityTone = "info" | "tool" | "approval" | "error";
 export type CanonicalTurnStatus = "completed" | "interrupted" | "failed" | "inProgress";
 export type CanonicalTerminalTurnStatus = Exclude<CanonicalTurnStatus, "inProgress">;
