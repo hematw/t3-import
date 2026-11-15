@@ -40,6 +40,7 @@ function parseJson(value: unknown): JsonObject | undefined {
 }
 
 function fileUriPath(value: unknown): string | undefined {
+  if (typeof value === "string") value = { external: value };
   if (!isObject(value)) return undefined;
   const direct = stringValue(value.fsPath) ?? stringValue(value.path);
   if (direct && value.scheme !== "vscode-remote") return direct;
