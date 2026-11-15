@@ -1,12 +1,12 @@
 # t3-import
 
-`t3-import` is an independent, local-only CLI for importing Codex and Claude Code conversation history into [T3 Code](https://github.com/pingdotgg/t3code). It writes canonical orchestration events while T3 is closed; T3 rebuilds its own projections on the next launch. The original provider session is bound so the current branch can resume when the source history is still available.
+`t3-import` is an independent, local-only CLI for importing Codex, Claude Code, and Cursor conversation history into [T3 Code](https://github.com/pingdotgg/t3code). It writes canonical orchestration events while T3 is closed; T3 rebuilds its own projections on the next launch. The original provider session is bound so the current branch can resume when the source history is still available.
 
 Compatibility is intentionally explicit: **T3 migrations 40–53**, Node.js 22 or newer, and local files only. Unknown T3 schemas fail closed.
 
 ## How it works
 
-`t3-import` reads local Codex conversations through `codex app-server` and Codex rollout JSONL files. It reads Claude Code sessions from the JSONL files under `~/.claude/projects/`. The source data is normalized into conversations, turns, messages, tool activity, plans, usage, and supported image attachments.
+`t3-import` reads Cursor IDE conversation history from its local SQLite database. Cursor support is read-only and imports historical transcripts; Cursor sessions cannot be resumed in T3 Code because T3 has no Cursor runtime adapter. Cursor’s storage schema is undocumented and may change between releases. Close Cursor before importing so SQLite WAL data is not missed.\n\n`t3-import` reads local Codex conversations through `codex app-server` and Codex rollout JSONL files. It reads Claude Code sessions from the JSONL files under `~/.claude/projects/`. The source data is normalized into conversations, turns, messages, tool activity, plans, usage, and supported image attachments.
 
 To keep T3 startup bounded, imports preserve every message, turn boundary, plan, image, error or approval, context compaction, and resume binding while compacting repetitive activity telemetry. Context-window snapshots are omitted, and long turns retain the latest visible reasoning summary plus a representative significant tool activity. The importer rejects any write that would exceed T3's safe one-launch projection budget.
 
@@ -139,3 +139,18 @@ npm run test:compatibility
 This requires Git, tar, Node.js 22.21.1 or newer, network access for isolated development dependencies, and a T3 checkout containing the pinned commits at `repos/t3code` (override with `T3_REFERENCE_REPO`). It prepares source snapshots under `artifacts/compatibility`, exercises both providers at all fourteen migrations and every upgrade to 53, and writes a JSON result report. Provider processes are replaced with controlled test adapters; no paid provider work runs. The installed T3 application and live database are not used.
 
 See [compatibility validation](https://github.com/CarlosGtrz/t3-import/blob/main/docs/compatibility.md) for reference commits, fixture regeneration, and the exact validation boundary.
+
+
+## Cursor support (experimental)
+
+Cursor is supported as a **read-only historical import source**. The adapter inspects Cursor's local SQLite databases and imports conversations whose workspace can be resolved to a local project directory. It does not modify Cursor's databases.
+
+```text
+t3-import list --source cursor
+t3-import show --source cursor --thread <composer-id>
+t3-import import --source cursor --workspace <project-path> --thread <composer-id> --yes --non-interactive
+```
+
+Cursor's local persistence format is undocumented and changes between releases. The importer currently recognizes composer metadata in `cursorDiskKV`, ordered `fullConversationHeadersOnly` bubble headers, and legacy inline `conversationMap` messages. It reads the global database at the platform-specific Cursor user-data directory and workspace indexes under `workspaceStorage`. Set `CURSOR_USER_DATA` to the Cursor user-data directory (the directory containing `globalStorage` and `workspaceStorage`) when using a custom profile or portable installation.
+
+The adapter opens SQLite databases read-only. Close Cursor before importing to avoid missing recent writes held in its WAL. Conversations without a resolvable local workspace are skipped. Message text and recognized tool results are imported; attachments, checkpoints, request context, and provider runtime state are not currently reconstructed. Imported Cursor tasks are historical only: they do not receive a resume binding, and sync/replace cannot continue Cursor sessions. The importer associates them with T3's Claude Agent provider instance only as a display/runtime placeholder; this does not make them resumable.

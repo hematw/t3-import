@@ -1,7 +1,7 @@
 {
   "name": "@carlosgtrz/t3-import",
   "version": "0.4.1",
-  "description": "Import, synchronize, and safely replace Codex and Claude Code conversations in T3 Code",
+  "description": "Import, synchronize, and safely replace Codex and Claude Code conversations, and import Cursor history into T3 Code",
   "keywords": [
     "t3code",
     "codex",
@@ -9,7 +9,9 @@
     "conversation",
     "importer",
     "cli",
-    "tui"
+    "tui",
+    "cursor",
+    "cursor-ide"
   ],
   "author": {
     "name": "CarlosGtrz",

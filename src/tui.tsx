@@ -324,7 +324,7 @@ export function ImportTui({ paths, initialSource, initialWorkspace, initialProvi
     if (input === "q") { app.exit(); return; }
     if (screen === "blocked" && (input === "r" || key.return)) { checkRuntime(); return; }
     if (key.upArrow || input === "k") {
-      move(-1, screen === "source" || screen === "result" ? 2 : screen === "workspace" ? workspaces.length : screen === "provider" ? providers.length : visibleThreads.length);
+      move(-1, screen === "source" ? 3 : screen === "result" ? 2 : screen === "workspace" ? workspaces.length : screen === "provider" ? providers.length : visibleThreads.length);
       return;
     }
     if (key.downArrow || input === "j") {
@@ -341,7 +341,7 @@ export function ImportTui({ paths, initialSource, initialWorkspace, initialProvi
       return;
     }
     if (screen === "source" && key.return) {
-      setSource(index === 0 ? "codex" : "claude"); setSelected(new Set()); setPreparedImports([]); setPreparedSync([]); setPreparedReplacements([]); navigate("workspace"); return;
+      setSource(index === 0 ? "codex" : index === 1 ? "claude" : "cursor"); setSelected(new Set()); setPreparedImports([]); setPreparedSync([]); setPreparedReplacements([]); navigate("workspace"); return;
     }
     if (screen === "workspace" && key.return && workspaces[index]) {
       setWorkspace(workspaces[index]); setProvider(initialProvider ?? providers[0]); navigate("threads"); return;
@@ -428,7 +428,7 @@ export function ImportTui({ paths, initialSource, initialWorkspace, initialProvi
     <Box marginTop={1} flexDirection="column">
       {screen === "preflight" && <Text>Checking whether T3 is running…</Text>}
       {screen === "blocked" && <><Text bold color="red">T3 is running</Text><Text>Close T3 before importing, syncing, or replacing{runtime?.pid ? ` (detected PID ${runtime.pid})` : ""}.</Text>{runtime?.origin ? <Text dimColor>Runtime: {runtime.origin}</Text> : null}<Text>Press r or Enter to check again, or q to quit.</Text></>}
-      {screen === "source" && <><Text bold>Choose a source</Text><Menu items={["Codex", "Claude Code"]} index={index} /></>}
+      {screen === "source" && <><Text bold>Choose a source</Text><Menu items={["Codex", "Claude Code", "Cursor"]} index={index} /></>}
       {screen === "workspace" && <><Text bold>Choose a workspace</Text>{summaries.length === 0 ? <Text>Discovering {source} conversations…</Text> : <Menu items={workspaces} index={index} />}</>}
       {screen === "provider" && <><Text bold>Choose a T3 provider instance</Text><Menu items={providers} index={index} /></>}
       {screen === "threads" && <>

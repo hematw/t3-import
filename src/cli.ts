@@ -18,7 +18,7 @@ import { inspectConversationSync, syncConversations } from "./target/sync.js";
 import { replaceConversations } from "./target/replace.js";
 import { discoverT3CacheProfiles, formatCacheResetResult, resetT3RebuildableCache } from "./target/cache.js";
 
-const sourceSchema = z.enum(["codex", "claude"]);
+const sourceSchema = z.enum(["codex", "claude", "cursor"]);
 const program = new Command();
 
 function collect(value: string, previous: string[]): string[] { return [...previous, value]; }
@@ -78,7 +78,7 @@ async function attachCacheReset<T extends ImportRunResult | SyncRunResult | Repl
 
 program
   .name("t3-import")
-  .description("Import, synchronize, and replace Codex and Claude Code conversations in T3 Code")
+  .description("Import Codex, Claude Code, and Cursor conversations into T3 Code")
   .version(IMPORTER_VERSION)
   .option("--t3-home <path>", "T3 home directory")
   .option("--db <path>", "T3 state.sqlite path")
@@ -96,7 +96,7 @@ program
 
 program.command("list")
   .description("List source conversations")
-  .requiredOption("--source <source>", "codex or claude")
+  .requiredOption("--source <source>", "codex, claude, or cursor")
   .option("--workspace <path>")
   .option("--since <date>", "ISO date/time")
   .action(async (options: { source: string; workspace?: string; since?: string }) => {
@@ -136,7 +136,7 @@ program.command("doctor")
     }
     const staging = existsSync(paths.attachmentsDir) ? readdirSync(paths.attachmentsDir).filter((name) => name.startsWith(".t3-import-staging-")) : [];
     const sources: Record<string, unknown> = {};
-    for (const name of ["codex", "claude"] as const) {
+    for (const name of ["codex", "claude", "cursor"] as const) {
       try { const items = await sourceAdapter(name).discover({}); sources[name] = { available: true, conversations: items.length, workspaces: new Set(items.map((item) => item.workspace)).size }; }
       catch (error) { sources[name] = { available: false, error: error instanceof Error ? error.message : String(error) }; }
     }

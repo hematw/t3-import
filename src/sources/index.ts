@@ -1,10 +1,12 @@
 import type { SourceAdapter, SourceName } from "../core/types.js";
 import { ClaudeSource } from "./claude.js";
 import { CodexSource } from "./codex.js";
+import { CursorSource } from "./cursor.js";
 
 const adapters: Record<SourceName, SourceAdapter> = {
   codex: new CodexSource(),
   claude: new ClaudeSource(),
+  cursor: new CursorSource(),
 };
 
 export function sourceAdapter(name: SourceName): SourceAdapter {
